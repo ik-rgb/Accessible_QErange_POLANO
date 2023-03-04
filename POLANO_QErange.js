@@ -1,16 +1,78 @@
-var version = "0.1";
-var Ei_numMax=5;
+const version = "0.1";
+const Ei_numMax=5;
 var Ei = new Array(Ei_numMax);
-var decimal_digit = 1000;
+const decimal_digit = 1000;
 var isOptimumEi= (new Array(Ei_numMax)).fill(true);
 
-var DetBankNum = 4;
-var tth_Max = new Array(DetBankNum);
-var tth_Min = new Array(DetBankNum);
+const TOFscale = 10.0;    // ms to pixel
+const Lscale=10.0;        // meter to pixel
+const TOF_len_R = 40;       // Real TOF max (ms)
+const TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
 
-var eps=1e-6;
+//Inst. parameters 
+const L1_default=17.5;
+const L2_default=2.0;
+const L3_default=1.85;
+const LT0_default=9.0;
+let Ltotal_R =L1_default+L2_default;      // Real source to detector (m)
+let Lsc_R = L1_default-L3_default;        // Real source chopper distance  (m)
+let L1_R = L1_default;          // Real source to sample distance (m)
+let LT0_R = LT0_default;        // Real source to T0 distance (m)
+const DetBankNum = 4;
+let tth_Max = new Array(DetBankNum);
+let tth_Min = new Array(DetBankNum);
 
-var T0_Chop_Const = 77.0/(2.0*Math.PI*300.0)*1000;     // (ms/Hz) cited from S. Itoh et al. Nuc. Inst. Methods in Phys. Research A61 86-92 (2012).
+let chopperFace=true;
+let freq=300;
+const T0_Chop_Const = 77.0/(2.0*Math.PI*300.0)*1000;     // (ms/Hz) cited from S. Itoh et al. Nuc. Inst. Methods in Phys. Research A61 86-92 (2012).
+
+//constants for TOF diagram
+const TextSize = 10;      // pixel
+const ChopperOpen = 4;    // pixel
+const marginX = 50;
+const marginY = 20;
+
+
+//chopper parametes
+let upperLimitEi = 8000;    // upper limit of Ei 8eV
+
+
+
+const eps=1e-6;
+
+
+window.addEventListener('load',()=>{
+    //initialization processes.
+    document.getElementById("verNum").innerHTML=version;
+    document.getElementById("verNum2").innerHTML=version;
+    setInstParams();
+    setChopperParams();
+
+});
+
+function setInstParams(){
+    const inputL1 = parseFloat(document.getElementById('input_L1').value);
+    const inputL2 = parseFloat(document.getElementById('input_L2').value);
+    const inputL3 = parseFloat(document.getElementById('input_L3').value);
+    const inputLT0 = parseFloat(document.getElementById('input_LT0').value);
+    Ltotal_R = inputL1+inputL2;      // Real source to detector (m)
+    Lsc_R = inputL1-inputL3;        // Real source chopper distance  (m)
+    L1_R = inputL1;          // Real source to sample distance (m)
+    LT0_R = inputLT0;        // Real source to T0 distance (m)
+
+    for (let j=0;j<DetBankNum;j+=1){
+        const labelTThMax='D'+(Math.round(j+1))+'_tth_max';
+        tth_Max[j] = parseFloat(document.getElementById(labelTThMax).value);
+        const labelTThMin='D'+(Math.round(j+1))+'_tth_min';
+        tth_Min[j] = parseFloat(document.getElementById(labelTThMin).value);    
+    }
+
+}
+
+function setChopperParams(){
+    chopperFace = Boolean(Number(document.getElementById('chopperFace').value));
+    freq = Number(document.getElementById('freq').value);
+}
 
 
 function draw() {
@@ -24,19 +86,9 @@ function draw() {
 
 function draw_TOF(){
 
-    document.getElementById("verNum").innerHTML=version;
-    document.getElementById("verNum2").innerHTML=version;
-    var marginX = 50;
-    var marginY = 20;
 
-    var TOFscale = 10.0;    // ms to pixel
-    var Lscale=10.0;        // meter to pixel
     
-    var inputL1 = Number(document.getElementById('input_L1').value);
-    var inputL2 = Number(document.getElementById('input_L2').value);
-    var inputL3 = Number(document.getElementById('input_L3').value);
-    var inputLT0 = Number(document.getElementById('input_LT0').value);
-
+/*
     var Ltotal_R = inputL1+inputL2;      // Real source to detector (m)
     var Lsc_R = inputL1-inputL3;        // Real source chopper distance  (m)
     var L1_R = inputL1;          // Real source to sample distance (m)
@@ -44,15 +96,15 @@ function draw_TOF(){
     var TOF_len_R = 40;       // Real TOF max (ms)
     var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
     var upperLimitEi = 8000;    // upper limit of Ei 8eV
+*/
 
-    var Ltotal=Ltotal_R*Lscale;
-    var Lsc = Lsc_R*Lscale;
-    var L1 = L1_R*Lscale;
-    var LT0 = LT0_R*Lscale; 
-    var TOF_len = TOF_len_R*TOFscale;
+    const Ltotal=Ltotal_R*Lscale;
+    const Lsc = Lsc_R*Lscale;
+    const L1 = L1_R*Lscale;
+    const LT0 = LT0_R*Lscale; 
 
-    var TextSize = 10;      // pixel
-    var ChopperOpen = 4;    // pixel
+    const TOF_len = TOF_len_R*TOFscale;
+
 
 
     var TickL = 8;
@@ -60,15 +112,12 @@ function draw_TOF(){
     var TOF_at_Chopper = new Array(50);
 
     //get elements from the document
-    var canvas2 = document.getElementById('CanvasTOF');
-    var context2 = canvas2.getContext('2d');
+    let canvas2 = document.getElementById('CanvasTOF');
+    let context2 = canvas2.getContext('2d');
 
-    var chopperFace = Boolean(Number(document.getElementById('chopperFace').value));
-
-    var freq = Number(document.getElementById('freq').value);
-    var ChopPeriod_R = 1.0/freq*1000.0;       //Real chopper period (ms). Although a factor "1/2" is necessary for Fermi choppers with straight slits, the chopper of HRC has curved slits. So 1/2 is not necessary.
-    var ChopPeriod = ChopPeriod_R*TOFscale;
-    var ChopRept = TOF_len_R/ChopPeriod_R;
+    const ChopPeriod_R = 1.0/freq*1000.0;       //Real chopper period (ms). Although a factor "1/2" is necessary for Fermi choppers with straight slits, the chopper of HRC has curved slits. So 1/2 is not necessary.
+    const ChopPeriod = ChopPeriod_R*TOFscale;
+    const ChopRept = TOF_len_R/ChopPeriod_R;
 
     var T0_freq = Number(document.getElementById('T0_freq').value);
     var T0ChopPeriod_R = 1.0/T0_freq*1000.0/2;    //Real T0 chopper period (ms). A factor "1/2" is necessary for a symmetric rotor.
@@ -326,12 +375,6 @@ function draw_Qxy(){
     qk[2] = Number(document.getElementById('qk3').value);
 
 
-    for (var j=0;j<DetBankNum;j+=1){
-        var labelTThMax='D'+(Math.round(j+1))+'_tth_max';
-        tth_Max[j] = Number(document.getElementById(labelTThMax).value);
-        var labelTThMin='D'+(Math.round(j+1))+'_tth_min';
-        tth_Min[j] = Number(document.getElementById(labelTThMin).value);    
-    }
 
 
     //accessible area

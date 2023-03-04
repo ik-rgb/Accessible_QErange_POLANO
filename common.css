@@ -27,7 +27,7 @@ body {
 	font-family: "Yu Gothic", sans-serif;
 	height: auto;
 	position: fixed;
-	background-color: rgb(41, 41, 41);
+	background-color: rgb(2, 56, 155);
 	margin: 0px 0px 0px 0px;
 	padding: 15px 10px 15px 20px;
 }
@@ -41,7 +41,7 @@ body {
 }
 
 .dummy_text{
-	color: rgb(41, 41, 41);
+	color: rgb(2, 56, 155);
 }
 
 .menu_item{

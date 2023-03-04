@@ -32,12 +32,21 @@
             L<sub>3</sub> (monochro chopper to sample) : <input type="text" size="5" id="input_L3" value="1.85"> m <br />
             L<sub>T0</sub> (moderator to T<sub>0</sub> chopper) : <input type="text" size="5" id="input_LT0" value="9.0"> m <br />
             <input type="button" value="   set   " onclick="draw()"/><br />
-            <img src="HRC_layout_v7.png"><br />
-            (Cited from <a href="https://doi.org/10.1016/j.physb.2018.11.059" target="_blank">S. Itoh <i>et al</i>. Physica B: Condensed Matter <b>568</b>, 76-80 (2019)</a>, and modified from the original version. )<br />
-            See also <a href="https://mlfinfo.jp/en/bl12/" target="_blank">Official WebSite : BL12 HRC - High Resolution Chopper Spectrometer -</a>            
+        </td>
+        <td>
+            ------
+        </td>
+        <td valign="top">
+            Det1 : <input type="text" size="6" id="D1_tth_min" value="3.0"> -  <input type="text" size="6" id="D1_tth_max" value="21.5"><br />
+            Det2 : <input type="text" size="6" id="D2_tth_min" value="23.5"> -  <input type="text" size="6" id="D2_tth_max" value="42.0"><br />
+            Det3 : <input type="text" size="6" id="D3_tth_min" value="44.0"> -  <input type="text" size="6" id="D3_tth_max" value="62.5"><br />
+            Det4 : <input type="text" size="6" id="D4_tth_min" value="-29.6"> -  <input type="text" size="6" id="D4_tth_max" value="-14.0"><br />
         </td>
     </tr>
 </table>
+<img src="HRC_layout_v7.png"><br />
+(Cited from <a href="https://doi.org/10.1016/j.physb.2018.11.059" target="_blank">S. Itoh <i>et al</i>. Physica B: Condensed Matter <b>568</b>, 76-80 (2019)</a>, and modified from the original version. )<br />
+See also <a href="https://mlfinfo.jp/en/bl12/" target="_blank">Official WebSite : BL12 HRC - High Resolution Chopper Spectrometer -</a>            
 
 
 <div class="dummy_space1" id="sec_TOF">-</div>
@@ -98,9 +107,6 @@
         <td width="300">
             <b><i>q</i>-vectors</b>
         </td>
-        <td>
-            <b>Detector Banks (two-theta range)</b><br />
-        </td>
     </tr>
     <tr>
         <td>
@@ -114,13 +120,6 @@
                 <i>q</i><sub>2</sub> : <i>h</i> <input type="text" size="6" id="qh2" value="0">, <i>k</i> <input type="text" size="6" id="qk2" value="0"><br />
                 <i>q</i><sub>3</sub> : <i>h</i> <input type="text" size="6" id="qh3" value="0">, <i>k</i> <input type="text" size="6" id="qk3" value="0"><br />
                 <input type="button" value="   set   " onclick="draw()"/><br />
-        </td>
-        <td>
-            Det1 : <input type="text" size="6" id="D1_tth_min" value="3.0"> -  <input type="text" size="6" id="D1_tth_max" value="21.5"><br />
-            Det2 : <input type="text" size="6" id="D2_tth_min" value="23.5"> -  <input type="text" size="6" id="D2_tth_max" value="42.0"><br />
-            Det3 : <input type="text" size="6" id="D3_tth_min" value="44.0"> -  <input type="text" size="6" id="D3_tth_max" value="62.5"><br />
-            Det4 : <input type="text" size="6" id="D4_tth_min" value="-29.6"> -  <input type="text" size="6" id="D4_tth_max" value="-14.0"><br />
-            <input type="button" value="   set   " onclick="draw()"/><br />
         </td>
     </tr>
 </table>
