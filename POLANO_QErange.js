@@ -24,6 +24,11 @@ let tth_Min = new Array(DetBankNum);
 
 let chopperFace=true;
 let freq=300;
+let T0_freq = 50;
+let TargetEi =100;
+let ChopOfst_R =0;      //Real chopper offset (ms)
+let TOFs_at_Chopper = new Array(50);
+
 const T0_Chop_Const = 77.0/(2.0*Math.PI*300.0)*1000;     // (ms/Hz) cited from S. Itoh et al. Nuc. Inst. Methods in Phys. Research A61 86-92 (2012).
 
 //constants for TOF diagram
@@ -47,6 +52,7 @@ window.addEventListener('load',()=>{
     document.getElementById("verNum2").innerHTML=version;
     setInstParams();
     setChopperParams();
+    getEis();
 
 });
 
@@ -72,6 +78,31 @@ function setInstParams(){
 function setChopperParams(){
     chopperFace = Boolean(Number(document.getElementById('chopperFace').value));
     freq = Number(document.getElementById('freq').value);
+    T0_freq = Number(document.getElementById('T0_freq').value);
+    upperLimitEi = Number(document.getElementById('upperLimitEi').value);
+    TargetEi = Number(document.getElementById('targetEi').value);
+
+}
+
+function getEis(){
+    const TargetTOF_at_Chopper=(TOFconst*(Lsc_R)/Math.sqrt(TargetEi));
+    const ChopPeriod_R = 1.0/freq*1000.0;       //Real chopper period (ms). Although a factor "1/2" is necessary for Fermi choppers with straight slits, the chopper of HRC has curved slits. So 1/2 is not necessary.
+    const ChopRept = TOF_len_R/ChopPeriod_R;
+
+    ChopOfst_R =0;      //Real chopper offset (ms)
+    for (let tt=0;tt<=ChopRept;tt+=1){
+        const t1=(tt)*ChopPeriod_R;
+        const t2=(tt+1.0)*ChopPeriod_R;
+        if ((TargetTOF_at_Chopper > t1) && (TargetTOF_at_Chopper <= t2) ){
+            ChopOfst_R=TargetTOF_at_Chopper-t1;
+        }
+    }
+
+    TOFs_at_Chopper[0]=(ChopOfst_R);    
+    for (let i = 1; i < ChopRept; i += 1) {
+        TOFs_at_Chopper[i]=(ChopPeriod_R*(i)+ChopOfst_R);    
+    }
+
 }
 
 
@@ -86,30 +117,15 @@ function draw() {
 
 function draw_TOF(){
 
-
-    
-/*
-    var Ltotal_R = inputL1+inputL2;      // Real source to detector (m)
-    var Lsc_R = inputL1-inputL3;        // Real source chopper distance  (m)
-    var L1_R = inputL1;          // Real source to sample distance (m)
-    var LT0_R = inputLT0;        // Real source to T0 distance (m)
-    var TOF_len_R = 40;       // Real TOF max (ms)
-    var TOFconst = 2.286;       // TOF at 1 m is 2.286/sqrt(E)
-    var upperLimitEi = 8000;    // upper limit of Ei 8eV
-*/
-
     const Ltotal=Ltotal_R*Lscale;
     const Lsc = Lsc_R*Lscale;
     const L1 = L1_R*Lscale;
     const LT0 = LT0_R*Lscale; 
-
     const TOF_len = TOF_len_R*TOFscale;
 
 
 
-    var TickL = 8;
-
-    var TOF_at_Chopper = new Array(50);
+    const TickL = 8;
 
     //get elements from the document
     let canvas2 = document.getElementById('CanvasTOF');
@@ -119,17 +135,14 @@ function draw_TOF(){
     const ChopPeriod = ChopPeriod_R*TOFscale;
     const ChopRept = TOF_len_R/ChopPeriod_R;
 
-    var T0_freq = Number(document.getElementById('T0_freq').value);
     var T0ChopPeriod_R = 1.0/T0_freq*1000.0/2;    //Real T0 chopper period (ms). A factor "1/2" is necessary for a symmetric rotor.
     var T0ChopPeriod = T0ChopPeriod_R*TOFscale;
     var T0ChopRept = TOF_len_R/T0ChopPeriod_R;
     var T0_Blind_R = T0_Chop_Const/T0_freq;
     var T0_Blind = T0_Blind_R*TOFscale;
 
-    var TargetEi = Number(document.getElementById('targetEi').value);
+/*
     var TargetTOF_at_Chopper=(TOFconst*(Lsc_R)/Math.sqrt(TargetEi));
-
-    upperLimitEi = Number(document.getElementById('upperLimitEi').value);
 
     var ChopOfst_R =0;      //Real chopper offset (ms)
 
@@ -142,19 +155,18 @@ function draw_TOF(){
         if ((TargetTOF_at_Chopper > t1) && (TargetTOF_at_Chopper <= t2) ){
             ChopOfst_R=TargetTOF_at_Chopper-t1;
         }
-    }
+    }*/
 
-    var displayChopperOfst = ChopOfst_R;
+    let displayChopperOfst = ChopOfst_R;
     if (chopperFace == true){
         displayChopperOfst +=0;
     }
     else {
         displayChopperOfst += ChopPeriod_R/2.0;       // Another half rotation is necessary to have optimum condition for the target Ei
     }
-
     document.getElementById('offset').value=Math.round(displayChopperOfst*decimal_digit)/decimal_digit;
 
-    var ChopOfst = ChopOfst_R*TOFscale;
+    let ChopOfst = ChopOfst_R*TOFscale;
 
     var temp = document.getElementById('Ei_Num_ofst');
     var Ei_num_ofst = Number(temp.value);
@@ -183,7 +195,7 @@ function draw_TOF(){
 
     // x ticks
     context2.font = " 10px sans-serif";
-    for (var i=0;i<5;i+=1){
+    for (let i=0;i<5;i+=1){
         context2.beginPath();
         context2.moveTo(marginX+TOF_len/4*i, marginY+Ltotal);
         context2.lineTo(marginX+TOF_len/4*i, marginY+Ltotal-TickL);
@@ -222,20 +234,20 @@ function draw_TOF(){
     context2.moveTo(marginX, Ltotal+marginY-Lsc);
     context2.lineTo(marginX-ChopperOpen/2+ChopOfst, Ltotal+marginY-Lsc);
     context2.stroke();
-    TOF_at_Chopper[0]=(ChopOfst_R);    
+//    TOFs_at_Chopper[0]=(ChopOfst_R);    
 
-    for (var i = 1; i < ChopRept; i += 1) {
+    for (let i = 1; i < ChopRept; i += 1) {
         context2.beginPath();
         context2.moveTo(marginX+ChopPeriod*(i-1)+ChopperOpen/2+ChopOfst, Ltotal+marginY-Lsc);
         context2.lineTo(marginX+ChopPeriod*(i)-ChopperOpen/2+ChopOfst, Ltotal+marginY-Lsc);
         context2.stroke();
-        TOF_at_Chopper[i]=(ChopPeriod_R*(i)+ChopOfst_R);    
+//        TOFs_at_Chopper[i]=(ChopPeriod_R*(i)+ChopOfst_R);    
     }
 
     // Determine Ei num offset
     Ei_num_ofst=0;
     for (var i=0;i<ChopRept;i+=1){
-        var testE =(TOFconst/TOF_at_Chopper[i]*(Lsc_R))**2.0 ;
+        var testE =(TOFconst/TOFs_at_Chopper[i]*(Lsc_R))**2.0 ;
         if (testE > upperLimitEi){
             Ei_num_ofst += 1;
         }    
@@ -244,8 +256,8 @@ function draw_TOF(){
 
     for(var i=0;i<Ei_numMax;i+=1){
         var idE='E'+(i+1);
-        document.getElementById(idE).value = Math.round((TOFconst/TOF_at_Chopper[Ei_num_ofst+i]*(Lsc_R))**2.0*decimal_digit)/decimal_digit ;
-        Ei[i]=(TOFconst/TOF_at_Chopper[Ei_num_ofst+i]*(Lsc_R))**2.0 ;
+        document.getElementById(idE).value = Math.round((TOFconst/TOFs_at_Chopper[Ei_num_ofst+i]*(Lsc_R))**2.0*decimal_digit)/decimal_digit ;
+        Ei[i]=(TOFconst/TOFs_at_Chopper[Ei_num_ofst+i]*(Lsc_R))**2.0 ;
     }
 
 
@@ -261,7 +273,7 @@ function draw_TOF(){
     context2.stroke();
     var T0_blind_start = 0;
     var T0_blind_end = T0_Blind_R;
-    var TOF_at_T0 = TOF_at_Chopper[Ei_num_ofst]/Lsc*LT0;
+    var TOF_at_T0 = TOFs_at_Chopper[Ei_num_ofst]/Lsc*LT0;
     if(TOF_at_T0>T0_blind_start && TOF_at_T0<T0_blind_end){
         isOptimumEi[0]=false;
     }
@@ -277,7 +289,7 @@ function draw_TOF(){
         T0_blind_end = T0ChopPeriod_R*(i)+T0_Blind_R;
 
         for (var j=0;j<Ei_numMax;j+=1){
-            TOF_at_T0 = TOF_at_Chopper[Ei_num_ofst+j]/Lsc*LT0;
+            TOF_at_T0 = TOFs_at_Chopper[Ei_num_ofst+j]/Lsc*LT0;
             if(TOF_at_T0>T0_blind_start && TOF_at_T0<T0_blind_end){
                 isOptimumEi[j]=false;
             }
@@ -300,7 +312,7 @@ function draw_TOF(){
         }
         context2.beginPath();
         context2.moveTo(marginX, marginY+Ltotal);
-        context2.lineTo(marginX+TOF_at_Chopper[Ei_num_ofst+i]*TOFscale*Ltotal/Lsc, marginY);
+        context2.lineTo(marginX+TOFs_at_Chopper[Ei_num_ofst+i]*TOFscale*Ltotal/Lsc, marginY);
         context2.stroke();
     }
     context2.lineWidth=1;
