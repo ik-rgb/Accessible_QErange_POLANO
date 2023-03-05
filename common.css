@@ -44,6 +44,10 @@ body {
 	color: rgb(2, 56, 155);
 }
 
+.dummy_text2{
+	color: rgb(255, 255, 255);
+}
+
 .menu_item{
 	font-family: "Yu Gothic", sans-serif;
 	font-size: 80%;
