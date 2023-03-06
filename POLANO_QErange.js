@@ -22,7 +22,7 @@ tth_Min = [-29.165,-9.165,3,10.835,30.835,50.835,70.835,90.835,110.835];
 tth_Max = [-10.835,-3,9.165,29.165,49.165,69.165,89.165,109.165,129.165];
 
 //Chopper parameters
-let chopperFace=true;
+let chopperFace=1;  //1: true, 0:false
 let freq=300;
 let T0_freq = 50;
 let TargetEi =40;
